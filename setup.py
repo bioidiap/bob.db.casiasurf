@@ -32,7 +32,7 @@ setup(
     entry_points = {
         
         'bob.db': [
-          'fargo = bob.db.fargo.driver:Interface',
+          'casiasurf = bob.db.casiasurf.driver:Interface',
         ],
 
       },
