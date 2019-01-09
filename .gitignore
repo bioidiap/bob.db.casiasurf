@@ -15,3 +15,4 @@ sphinx
 log*
 test*
 record.txt
+.eggs
