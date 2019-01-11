@@ -16,8 +16,12 @@ logger = bob.core.log.setup('bob.db.casiasurf')
 
 Base = declarative_base()
 
+protocolPurpose_file_association = Table('protocolPurpose_file_association', Base.metadata,
+  Column('protocolPurpose_id', Integer, ForeignKey('protocolPurpose.id')),
+  Column('imagefile_id',  Integer, ForeignKey('imagefile.id')))
 
-class Sample(Base)
+
+class Sample(Base):
   """ A sample describe an example for this database.
       
       A sample consists in a single frame.
@@ -72,7 +76,6 @@ class ImageFile(Base, bob.db.base.File):
     The modality from which this file was recorded
   path: str
     The path on the disk where this file is stored.
-  
   """
   
   __tablename__ = 'imagefile'
@@ -82,7 +85,7 @@ class ImageFile(Base, bob.db.base.File):
 
   # client id of this file
   sample_id = Column(String(100), ForeignKey('sample.id'))  
-  sample = relationship(Sample, backref=backref('files', order_by=id))
+  sample = relationship(Sample, backref=backref('image_file', order_by=id))
   
   # path of this file in the database
   path = Column(String(100), unique=True)
@@ -106,10 +109,9 @@ class ImageFile(Base, bob.db.base.File):
     
     """
     bob.db.base.File.__init__(self, path=path)
-    self.group = group
+    self.sample_id = sample_id
+    self.path = path
     self.modality = modality
-    self.purpose = purpose
-    self.attack_type = attack_type
 
   def __repr__(self):
     return "File('%s')" % self.path
@@ -142,7 +144,11 @@ class ImageFile(Base, bob.db.base.File):
 class Protocol(Base):
   """CASIA-SURF protocols
  
-  The class representing the protocols
+  The class representing the protocols.
+
+  For now, the protocols are simply used to retrieve different modalities.
+  Namely, the default protocol will retrieve all modalities for each sample,
+  and there also are protocols that retrieve a single modality (rgb, nir, depth)
 
   Attributes
   ----------
@@ -183,9 +189,9 @@ class ProtocolPurpose(Base):
   protocol_id: str
     The associated protocol
   group: str
-    The group in the associated protocol ('world', 'dev' or 'eval')
+    The group in the associated protocol ('train', 'validation' or 'test')
   purpose: str
-    The purpose of the group in this protocol ('train', 'enroll' or 'probe')
+    The purpose of the group in this protocol ('real', 'attack' or 'unknown')
   
   """
 
@@ -196,14 +202,14 @@ class ProtocolPurpose(Base):
   protocol_id = Column(Integer, ForeignKey('protocol.id'))
   group_choices = ('train', 'validation', 'test')
   group = Column(Enum(*group_choices))
-  purpose_choices = ('real', 'attack')
+  purpose_choices = ('real', 'attack', 'unknown')
   purpose = Column(Enum(*purpose_choices))
 
   # protocol: a protocol have 1 to many purpose
   protocol = relationship("Protocol", backref=backref("purposes", order_by=id))
   
   # files: many to many relationship
-  files = relationship("File", secondary=protocolPurpose_file_association, backref=backref("protocolPurposes", order_by=id))
+  files = relationship("ImageFile", secondary=protocolPurpose_file_association, backref=backref("protocolPurposes", order_by=id))
 
   def __init__(self, protocol_id, group, purpose):
     """ Init function
