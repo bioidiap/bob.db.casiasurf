@@ -85,6 +85,12 @@ def add_samples(session, imagesdir, extension='.jpg'):
         exists = session.query(q.exists()).scalar()
         if not exists:
           session.add(o)
+          session.flush()
+          session.refresh(o)
+          # add image files for that sample
+          q_im = session.query(ImageFile).join(Sample).filter(Sample.id == sample_id).order_by(ImageFile.id)
+          for k in q_im:
+            o.files.append(k)
           logger.debug("Adding sample {}".format(sample_id))
         else:
           # decrease counter if sample exists !
@@ -214,36 +220,24 @@ def add_protocols(session):
 
       # first retrieve all files for the group and the purpose 
       if purpose == 'real':
-        q = session.query(ImageFile).join(Sample).filter(and_(Sample.group == group, Sample.attack_type == 0)).order_by(ImageFile.id)
-        
-        #logger.info("=== adding images for {}".format(group_purpose))
-        #exs = (list(q))
-        #if len(exs) > 0:
-        #  for ex in exs[:20]:
-        #    print(ex.path)
-        #    print(ex.sample_id)
-
+        #q = session.query(ImageFile).join(Sample).filter(and_(Sample.group == group, Sample.attack_type == 0)).order_by(ImageFile.id)
+        q = session.query(Sample).filter(and_(Sample.group == group, Sample.attack_type == 0)).order_by(Sample.id)
       if purpose == 'attack':
-        q = session.query(ImageFile).join(Sample).filter(and_(Sample.group == group, Sample.attack_type > 0)).order_by(ImageFile.id)
-        
-        #logger.info("=== adding images for {}".format(group_purpose))
-        #exs = (list(q))
-        #if len(exs) > 0:
-        #  for ex in exs[:20]:
-        #    print(ex.path)
-        #    print(ex.sample_id)
-
+        #q = session.query(ImageFile).join(Sample).filter(and_(Sample.group == group, Sample.attack_type > 0)).order_by(ImageFile.id)
+        q = session.query(Sample).filter(and_(Sample.group == group, Sample.attack_type > 0)).order_by(Sample.id)
       if purpose == 'unknown':
-        q = session.query(ImageFile).join(Sample).filter(Sample.group == group).order_by(ImageFile.id)
+        #q = session.query(ImageFile).join(Sample).filter(Sample.group == group).order_by(ImageFile.id)
+        q = session.query(Sample).filter(Sample.group == group).order_by(Sample.id)
       
-      # filter by modality if needed
-      if protocol_name != 'all':
-        q = q.filter(ImageFile.modality == protocol_name)
+      # then filter by modality if needed
+      # note: this may be done in query.objects maybe ... 
+      #if protocol_name != 'all':
+      #  q = q.filter(ImageFile.modality == protocol_name)
 
-      # now add the files
+      # now add the samples
       for k in q:
-        pu.files.append(k)
-      logger.info("added {} files".format(len(list(q))))
+        pu.samples.append(k)
+      logger.info("added {} samples".format(len(list(q))))
 
 
 def create_tables(args):
@@ -280,8 +274,8 @@ def create(args):
   create_tables(args)
   s = session_try_nolock(args.type, args.files[0], echo=False)
   
-  add_samples(s, args.imagesdir)
   add_files(s, args.imagesdir)
+  add_samples(s, args.imagesdir)
   add_protocols(s)
   s.commit()
   s.close()

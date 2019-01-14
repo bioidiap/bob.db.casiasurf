@@ -16,10 +16,13 @@ logger = bob.core.log.setup('bob.db.casiasurf')
 
 Base = declarative_base()
 
-protocolPurpose_file_association = Table('protocolPurpose_file_association', Base.metadata,
+protocolPurpose_sample_association = Table('protocolPurpose_file_association', Base.metadata,
   Column('protocolPurpose_id', Integer, ForeignKey('protocolPurpose.id')),
-  Column('imagefile_id',  Integer, ForeignKey('imagefile.id')))
+  Column('sample_id',  Integer, ForeignKey('sample.id')))
 
+sample_file_association = Table('sample_files_association', Base.metadata,
+  Column('sample_id', String, ForeignKey('sample.id')),
+  Column('file_id', Integer, ForeignKey('imagefile.id')))
 
 class Sample(Base):
   """ A sample describe an example for this database.
@@ -39,6 +42,8 @@ class Sample(Base):
   group_choices = ('train', 'validation', 'test')
   group = Column(Enum(*group_choices))
   attack_type = Column(Integer)
+  
+  files = relationship("ImageFile", secondary=sample_file_association, backref=backref("Sample", order_by=id))
 
   def __init__(self, id, group, attack_type=0):
     """ Init function
@@ -208,8 +213,8 @@ class ProtocolPurpose(Base):
   # protocol: a protocol have 1 to many purpose
   protocol = relationship("Protocol", backref=backref("purposes", order_by=id))
   
-  # files: many to many relationship
-  files = relationship("ImageFile", secondary=protocolPurpose_file_association, backref=backref("protocolPurposes", order_by=id))
+  # samples: many to many relationship
+  samples = relationship("Sample", secondary=protocolPurpose_sample_association, backref=backref("protocolPurposes", order_by=id))
 
   def __init__(self, protocol_id, group, purpose):
     """ Init function

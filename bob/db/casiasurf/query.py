@@ -34,7 +34,7 @@ class Database(bob.db.base.SQLiteDatabase):
                original_extension=None,
                annotation_directory=None,
                annotation_extension=None,
-               protocol='default'):
+               protocol='all'):
     """ Init function
 
     Parameters
@@ -49,14 +49,10 @@ class Database(bob.db.base.SQLiteDatabase):
       Extension of anootation files
 
     """
-    super(Database, self).__init__(SQLITE_FILE, File, original_directory, original_extension)
+    super(Database, self).__init__(SQLITE_FILE, ImageFile, original_directory, original_extension)
     self.annotation_directory = annotation_directory
     self.annotation_extension = annotation_extension
     self.protocol = protocol
-
-  @property
-  def modalities(self):
-    return ['rgb', 'nir', 'depth']
 
   def groups(self, protocol=None):     
     """Returns the names of all registered groups
@@ -67,18 +63,18 @@ class Database(bob.db.base.SQLiteDatabase):
       ignored, since the group are the same across protocols.
     
     """   
-    return File.group_choices
+    return ProtocolPurpose.group_choices
 
 
   def purposes(self):
     """Returns purposes 
     
     """
-    return File.purpose_choices
+    return ProtocolPurpose.purpose_choices
 
 
-  def objects(self, purposes=None, groups=None, modality=None):
-    """Returns a set of Files for the specific query by the user.
+  def objects(self, purposes=None, groups=None):
+    """Returns a set of Samples for the specific query by the user.
 
     Parameters
     ----------
@@ -90,26 +86,28 @@ class Database(bob.db.base.SQLiteDatabase):
       One of the groups ('dev', 'eval', 'train') or a tuple with several of them.
       If 'None' is given (this is the default), it is considered the same as a
       tuple with all possible values.
-    modality: str or tuple
-      One of the three modalities 'rgb', 'nir' and 'depth'
 
     Returns
     -------
     lst:
-      A list of files which have the given properties.
+      A list of samples which have the given properties.
     
     """
     from sqlalchemy import and_
     purposes = self.check_parameters_for_validity(purposes, "purpose", self.purposes())
     groups = self.check_parameters_for_validity(groups, "group", self.groups())
-    modality = self.check_parameters_for_validity(modality, "modality", self.modalities)
 
     # Now query the database
-    retval = []
-    q = self.query(File)
-    q = q.filter(File.group.in_(groups))
-    q = q.filter(File.modality.in_(modality))
-    q = q.filter(File.purpose.in_(purposes))
-    retval += list(q)
+    q = self.query(Sample).join((ProtocolPurpose, Sample.protocolPurposes)).join(Protocol)
+    
+    # get the right group(s)
+    q = q.filter(Sample.group.in_(groups))
+    
+    # get the right purpose 
+    if 'attack' in purposes:
+      q = q.filter(Sample.attack_type > 0)
+    if 'real' in purposes:
+      q = q.filter(Sample.attack_type == 0)
 
+    retval = list(q)
     return list(set(retval))  # To remove duplicates
