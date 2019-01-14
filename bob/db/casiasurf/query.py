@@ -46,7 +46,7 @@ class Database(bob.db.base.SQLiteDatabase):
     annotation_directory: str
       Path where the annotations are stored
     annotation_extension: str
-      Extension of anootation files
+      Extension of annotation files
 
     """
     super(Database, self).__init__(SQLITE_FILE, ImageFile, original_directory, original_extension)
@@ -75,6 +75,9 @@ class Database(bob.db.base.SQLiteDatabase):
 
   def objects(self, purposes=None, groups=None):
     """Returns a set of Samples for the specific query by the user.
+    
+    Note that a sample may contain up to 3 modalities (color, infrared and depth)
+    The protocol specifies which modality(ies) should be loaded
 
     Parameters
     ----------
