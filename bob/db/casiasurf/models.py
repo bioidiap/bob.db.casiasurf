@@ -138,7 +138,7 @@ class ImageFile(Base, bob.db.base.File):
   path = Column(String(100), unique=True)
   
   # modality
-  modality_choices = ('rgb', 'nir', 'depth')
+  modality_choices = ('color', 'infrared', 'depth')
   modality = Column(Enum(*modality_choices))
 
 
@@ -195,7 +195,7 @@ class Protocol(Base):
 
   For now, the protocols are simply used to retrieve different modalities.
   Namely, the default protocol will retrieve all modalities for each sample,
-  and there also are protocols that retrieve a single modality (rgb, nir, depth)
+  and there also are protocols that retrieve a single modality (color, infrared, depth)
 
   Attributes
   ----------

@@ -144,8 +144,8 @@ def add_files(session, imagesdir, extension='.jpg'):
         if infos[0] == 'Training': 
           
           stream = infos[4]
-          if stream == 'color': modality = 'rgb'
-          if stream == 'ir': modality = 'nir'
+          if stream == 'color': modality = 'color'
+          if stream == 'ir': modality = 'infrared'
           if stream == 'depth': modality = 'depth'
           
           if infos[1] == 'fake_part': 
@@ -164,8 +164,8 @@ def add_files(session, imagesdir, extension='.jpg'):
 
           temp = infos[2].split('-')
           stream = temp[1].split('.')[0]
-          if stream == 'color': modality = 'rgb'
-          if stream == 'ir': modality = 'nir'
+          if stream == 'color': modality = 'color'
+          if stream == 'ir': modality = 'infrared'
           if stream == 'depth': modality = 'depth'
           n_validation_images +=1 
           sample_id = temp[0] + '-type-unknown'
@@ -194,7 +194,7 @@ def add_protocols(session):
 
   from sqlalchemy import and_
 
-  modalities = ['all', 'rgb', 'nir', 'depth']
+  modalities = ['all', 'color', 'infrared', 'depth']
   
   group_purpose_list = [('train', 'real'), ('train', 'attack'), ('validation', 'unknown')]
 
