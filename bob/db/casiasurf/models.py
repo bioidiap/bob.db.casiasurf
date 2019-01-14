@@ -11,6 +11,8 @@ import bob.db.base
 from bob.db.base.sqlalchemy_migration import Enum, relationship
 
 import bob.core
+import bob.io.base
+import bob.io.image
 
 logger = bob.core.log.setup('bob.db.casiasurf')
 
@@ -61,9 +63,49 @@ class Sample(Base):
     self.group = group
     self.attack_type = attack_type
 
-  def load(self, modality='all'):
-    pass
+  def load(self, directory=None, extension=".jpg", modality=None):
+    """
+    loads a sample.
+
+    This function loads a sample from the CASIA-SURF database.
+    It should load a single modality or a combination of them.
+  
+    Parameters
+    ----------
+    directory: str
+      The default directory of the database
+    extension:
+      The default extension for (image) files.
+    modality: str or list of str 
+      'all' for all modalities (default), otherwise the name of the modality or a list of
+      modalities to consider. Modalities can be ['color', 'infrared', 'depth']
+
+    Returns
+    -------
+    dict:
+      Dictionary containing the modality as the key and the corresponding image as value.
+    """
+    mod_to_path = {}
+    mod_to_path['color'] = 'color'
+    mod_to_path['infrared'] = 'ir'
+    mod_to_path['depth'] = 'depth'
+
+    retval = {}
+    mods = ['color', 'infrared', 'depth']
+    if isinstance(modality, str) and modality != 'all':
+      mods = [modality]
+    else:
+      for m in modality:
+        mods.append(m)
+
+    for mod in mods:
+      for f in self.files:
+        if mod_to_path[mod] in f.path:
+          retval[mod] = bob.io.base.load(f.make_path(directory, extension))
    
+   return retval
+
+
   def is_attack(self):
     return self.attack_type != 0
 
