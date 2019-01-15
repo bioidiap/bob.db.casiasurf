@@ -34,7 +34,3 @@ def test_objects():
   assert len(db.objects(groups=('train',), purposes=('real',))) == 8942
   assert len(db.objects(groups=('train',), purposes=('attack',))) == 20324
   assert len(db.objects(groups=('validation',), purposes=('unknown',))) == 9608
-
-  
-
-
