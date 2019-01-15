@@ -20,31 +20,21 @@ def db_available(test):
     if os.path.exists(dbfile):
       return test(*args, **kwargs)
     else:
-      raise SkipTest("The database file '%s' is not available; did you forget to run 'bob_dbmanage.py %s create' ?" % (dbfile, 'fargo'))
+      raise SkipTest("The database file '%s' is not available; did you forget to run 'bob_dbmanage.py %s create' ?" % (dbfile, 'casiasurf'))
 
   return wrapper
 
 
 @db_available
-def test_clients():
-
-  # test whether the correct number of clients is returned
-  db = bob.db.casiasurf.Database()
-  assert len(db.groups()) == 3
-
-
-@db_available
 def test_objects():
-#  # tests if the right number of File objects is returned
+
+  # tests if the right number of sample objects is returned
   
   db = bob.db.casiasurf.Database()
+  assert len(db.objects(groups=('train',), purposes=('real',))) == 8942
+  assert len(db.objects(groups=('train',), purposes=('attack',))) == 20324
+  assert len(db.objects(groups=('validation',), purposes=('unknown',))) == 9608
 
-#  assert len(db.objects(protocol='mc-rgb', groups='world')) == 1000
-#  assert len(db.objects(protocol='mc-rgb', groups='dev', purposes='enroll')) == 500
-#  assert len(db.objects(protocol='mc-rgb', groups='dev', purposes='enroll', model_ids=26)) == 20
-#  assert len(db.objects(protocol='mc-rgb', groups='dev', purposes='probe')) == 500
-#  assert len(db.objects(protocol='mc-rgb', groups='dev', purposes='probe', model_ids=26)) == 500 # dense probing
-#  assert len(db.objects(protocol='mc-rgb', groups='eval', purposes='enroll')) == 500
-#  assert len(db.objects(protocol='mc-rgb', groups='eval', purposes='enroll', model_ids=51)) == 20
-#  assert len(db.objects(protocol='mc-rgb', groups='eval', purposes='probe')) == 500
-#  assert len(db.objects(protocol='mc-rgb', groups='eval', purposes='probe', model_ids=51)) == 500 # dense probing
+  
+
+
