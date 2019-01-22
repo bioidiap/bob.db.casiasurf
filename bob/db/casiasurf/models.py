@@ -63,6 +63,7 @@ class Sample(Base):
     self.group = group
     self.attack_type = attack_type
 
+
   def load(self, directory=None, extension=".jpg", modality=None):
     """
     loads a sample.
@@ -91,9 +92,12 @@ class Sample(Base):
     mod_to_path['depth'] = 'depth'
 
     retval = {}
-    mods = ['color', 'infrared', 'depth']
+    #retval['color'] = [1, 2, 3] 
+    mods = []
     if isinstance(modality, str) and modality != 'all':
       mods = [modality]
+    elif isinstance(modality, str) and modality == 'all':
+      mods = ['color', 'infrared', 'depth']
     else:
       for m in modality:
         mods.append(m)
@@ -108,6 +112,12 @@ class Sample(Base):
 
   def is_attack(self):
     return self.attack_type != 0
+
+  def __lt__(self, other):
+    if self.id < other.id:
+      return True
+    else:
+      return False
 
 
 class ImageFile(Base, bob.db.base.File):
