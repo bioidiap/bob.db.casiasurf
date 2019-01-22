@@ -100,17 +100,39 @@ class Database(bob.db.base.SQLiteDatabase):
     purposes = self.check_parameters_for_validity(purposes, "purpose", self.purposes())
     groups = self.check_parameters_for_validity(groups, "group", self.groups())
 
-    # Now query the database
-    q = self.query(Sample).join((ProtocolPurpose, Sample.protocolPurposes)).join(Protocol)
-    
-    # get the right group(s)
-    q = q.filter(Sample.group.in_(groups))
-    
-    # get the right purpose 
-    if 'attack' in purposes:
-      q = q.filter(Sample.attack_type > 0)
-    if 'real' in purposes:
-      q = q.filter(Sample.attack_type == 0)
+    #print("In low-level DB (objects): groups = {}".format(groups))
+    #print("In low-level DB (objects): purposes = {}".format(purposes))
 
-    retval = list(q)
+
+    # Now query the database
+    #q = self.query(Sample).join((ProtocolPurpose, Sample.protocolPurposes)).join(Protocol).filter(Sample.group.in_(groups))
+    
+    #q = self.query(Sample).filter(Sample.group.in_(groups))
+
+    #print("# of retrieved objects = {}".format(len(list(q))))
+    #
+
+    ##q = q.filter(Sample.group.in_(groups))
+    ##print("FILTERING GROUPS : # of retrieved objects = {}".format(len(list(q))))
+    #
+    ## get the right purpose 
+    #if 'attack' in purposes:
+    #  print("Filtering: attacks -> {}".format(len(list(q))))
+    #  q = q.filter(Sample.attack_type > 0)
+    #if 'real' in purposes:
+    #  print("Filtering: real examples -> {}".format(len(list(q))))
+    #  q = q.filter(Sample.attack_type == 0)
+    #if 'unknown' in purposes:
+    #  print("Filtering: real examples -> {}".format(len(list(q))))
+    #  q = q.filter(Sample.attack_type == 0)
+    
+    q = self.query(Sample)\
+                       .join((ProtocolPurpose, Sample.protocolPurposes))\
+                       .filter(ProtocolPurpose.group.in_(groups))\
+                       .filter(ProtocolPurpose.purpose.in_(purposes))\
+
+
+    retval = list(set(q))
+    #print("number of objects = {}".format(len(retval)))
+    #print("================== DONE ======================")
     return list(set(retval))  # To remove duplicates
