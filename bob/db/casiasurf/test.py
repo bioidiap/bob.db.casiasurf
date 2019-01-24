@@ -25,7 +25,6 @@ def db_available(test):
   return wrapper
 
 
-@db_available
 def test_objects():
 
   # tests if the right number of sample objects is returned
