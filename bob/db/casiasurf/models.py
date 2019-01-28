@@ -92,7 +92,6 @@ class Sample(Base):
     mod_to_path['depth'] = 'depth'
 
     retval = {}
-    #retval['color'] = [1, 2, 3] 
     mods = []
     if isinstance(modality, str) and modality != 'all':
       mods = [modality]
