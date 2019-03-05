@@ -35,7 +35,8 @@ def add_samples(session, imagesdir, extension='.jpg'):
 
   n_training_real_samples = 0
   n_training_attack_samples = 0
-  n_validation_samples = 0
+  n_validation_real_samples = 0
+  n_validation_attack_samples = 0
   n_testing_samples = 0
 
   for root, dirs, files in os.walk(imagesdir, topdown=False):
@@ -78,17 +79,19 @@ def add_samples(session, imagesdir, extension='.jpg'):
 
           ###################################################
           # here I will have to find, based on the list, the type of attack
-          # if attack
-          # else
+          # if attack:
+          #    n_validation_attack_samples += 1
+          # else:
+          #    n_validation_real_samples += 1
+          #
           # sample id built as it is done for training ...
           # sample_id = infos[2] + '-type-' + str(attack_type) + '-image-' + infos[5].split('.')[0]
           ###################################################
          
           # legacy - to be replaced
-          attack_type = None # we actually don't know
-          n_validation_samples += 1
-          sample_id = infos[2].split('-')[0] + '-type-unknown'
-
+          #attack_type = None # we actually don't know
+          #n_validation_samples += 1
+          #sample_id = infos[2].split('-')[0] + '-type-unknown'
 
         ###############
         ### TESTING ###
@@ -101,7 +104,6 @@ def add_samples(session, imagesdir, extension='.jpg'):
           attack_type = None # we actually don't know
           n_testing_samples += 1
           sample_id = infos[2].split('-')[0] + '-type-unknown'
-
 
 
         o = Sample(sample_id, group, attack_type)
@@ -124,8 +126,12 @@ def add_samples(session, imagesdir, extension='.jpg'):
             n_training_attack_samples -= 1
           if group == 'train' and attack_type == 0:
             n_training_real_samples -= 1
-          if group == 'validation':
-            n_validation_samples -= 1
+          if group == 'validation' and attack_type > 0:
+            n_validation_attack_samples -= 1
+          if group == 'validation' and attack_type == 0:
+            n_validation_real_samples -= 1
+          if group == 'test':
+            n_testing_samples -= 1
           logger.debug("sample {} already exists".format(sample_id))
   
   logger.info("Added {} real training samples".format(n_training_real_samples))
@@ -188,6 +194,7 @@ def add_files(session, imagesdir, extension='.jpg'):
         ##################
         elif infos[0] == 'Val':
 
+          # THIS SHOULD CHANGE
           temp = infos[2].split('-')
           stream = temp[1].split('.')[0]
           if stream == 'color': modality = 'color'
@@ -195,7 +202,15 @@ def add_files(session, imagesdir, extension='.jpg'):
           if stream == 'depth': modality = 'depth'
           n_validation_images +=1 
           sample_id = temp[0] + '-type-unknown'
-        
+
+        ###############
+        ### TESTING ###
+        ###############
+        else:
+          assert infos[0] == 'Testing'
+       
+          # Blah blah blah
+
         stem = image_info[0:-len(extension)]
         logger.debug("Adding file {}".format(stem))
         o = ImageFile(path=stem, sample_id=sample_id, modality=modality)
@@ -222,7 +237,7 @@ def add_protocols(session):
 
   modalities = ['all', 'color', 'infrared', 'depth']
   
-  group_purpose_list = [('train', 'real'), ('train', 'attack'), ('validation', 'unknown')]
+  group_purpose_list = [('train', 'real'), ('train', 'attack'), ('validation', 'real'), ('validation', 'attack'), ('test', 'unknown')]
 
 
   for protocol_name in modalities:
@@ -254,11 +269,6 @@ def add_protocols(session):
       if purpose == 'unknown':
         #q = session.query(ImageFile).join(Sample).filter(Sample.group == group).order_by(ImageFile.id)
         q = session.query(Sample).filter(Sample.group == group).order_by(Sample.id)
-      
-      # then filter by modality if needed
-      # note: this may be done in query.objects maybe ... 
-      #if protocol_name != 'all':
-      #  q = q.filter(ImageFile.modality == protocol_name)
 
       # now add the samples
       for k in q:
