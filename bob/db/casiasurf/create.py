@@ -36,12 +36,13 @@ def add_samples(session, imagesdir, extension='.jpg'):
   n_training_real_samples = 0
   n_training_attack_samples = 0
   n_validation_samples = 0
+  n_testing_samples = 0
 
   for root, dirs, files in os.walk(imagesdir, topdown=False):
     for name in files:
       image_filename = os.path.join(root, name)
 
-      # just to make sure that nothing weird will be added
+      # just to make sure that nothing weird will be added - considering only file ending with .jpg
       if os.path.splitext(image_filename)[1] == extension:
 
         # get all the info, base on the file path
@@ -74,9 +75,34 @@ def add_samples(session, imagesdir, extension='.jpg'):
         elif infos[0] == 'Val':
 
           group = 'validation'
+
+          ###################################################
+          # here I will have to find, based on the list, the type of attack
+          # if attack
+          # else
+          # sample id built as it is done for training ...
+          # sample_id = infos[2] + '-type-' + str(attack_type) + '-image-' + infos[5].split('.')[0]
+          ###################################################
+         
+          # legacy - to be replaced
           attack_type = None # we actually don't know
           n_validation_samples += 1
           sample_id = infos[2].split('-')[0] + '-type-unknown'
+
+
+        ###############
+        ### TESTING ###
+        ###############
+        else:
+          # this should be testing data
+          assert infos[0] == 'Testing':
+
+          group = 'test'
+          attack_type = None # we actually don't know
+          n_testing_samples += 1
+          sample_id = infos[2].split('-')[0] + '-type-unknown'
+
+
 
         o = Sample(sample_id, group, attack_type)
         q = session.query(Sample.id).filter(Sample.id==sample_id)
@@ -293,6 +319,6 @@ def add_command(subparsers):
   parser.add_argument('-v', '--verbose', action='count', default=0,
                       help="Do SQL operations in a verbose way")
   parser.add_argument('imagesdir', action='store', metavar='DIR',
-                      help="The path to the extracted images of the FARGO database")
+                      help="The path to the extracted images of the database")
 
   parser.set_defaults(func=create)  # action
