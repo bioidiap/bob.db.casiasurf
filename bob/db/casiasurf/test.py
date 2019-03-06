@@ -32,4 +32,7 @@ def test_objects():
   db = bob.db.casiasurf.Database()
   assert len(db.objects(groups=('train',), purposes=('real',))) == 8942
   assert len(db.objects(groups=('train',), purposes=('attack',))) == 20324
-  assert len(db.objects(groups=('validation',), purposes=('unknown',))) == 9608
+  assert len(db.objects(groups=('validation',), purposes=('real',))) == 2994
+  assert len(db.objects(groups=('validation',), purposes=('attack',))) == 6614
+  assert len(db.objects(groups=('validation',), purposes=('real','attack'))) == 9608
+  assert len(db.objects(groups=('test',), purposes=('unknown',))) == 57710
