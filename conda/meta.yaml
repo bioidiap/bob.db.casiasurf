@@ -22,16 +22,15 @@ requirements:
   host:
     - python {{ python }}
     - setuptools {{ setuptools }}
+    - sqlalchemy {{ sqlalchemy }}
     - bob.extension
     - bob.io.base
     - bob.io.image
-    - bob.bio.base
-    - bob.bio.face
     - bob.db.base
   run:
     - python
     - setuptools
-    - numpy
+    - sqlalchemy
 
 test:
   imports:

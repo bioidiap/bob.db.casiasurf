@@ -1,8 +1,6 @@
+setuptools
+sqlalchemy
 bob.extension
 bob.io.base
 bob.io.image
-bob.bio.base
-bob.bio.face
 bob.db.base
-numpy
-setuptools
