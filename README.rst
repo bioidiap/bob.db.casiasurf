@@ -1,14 +1,14 @@
 .. vim: set fileencoding=utf-8 :
 .. Tue  8 Jan 12:39:52 CET 2019
 
-.. image:: https://img.shields.io/badge/docs-stable-yellow.svg
-   :target: https://www.idiap.ch/software/bob/docs/bob/bob.db.casiasurf/stable/index.html
+.. image:: https://img.shields.io/badge/docs-v1.0.1-yellow.svg
+   :target: https://www.idiap.ch/software/bob/docs/bob/bob.db.casiasurf/v1.0.1/index.html
 .. image:: https://img.shields.io/badge/docs-latest-orange.svg
    :target: https://www.idiap.ch/software/bob/docs/bob/bob.db.casiasurf/master/index.html
-.. image:: https://gitlab.idiap.ch/bob/bob.db.casiasurf/badges/master/build.svg
-   :target: https://gitlab.idiap.ch/bob/bob.db.casiasurf/commits/master
-.. image:: https://gitlab.idiap.ch/bob/bob.db.casiasurf/badges/master/coverage.svg
-   :target: https://gitlab.idiap.ch/bob/bob.db.casiasurf/commits/master
+.. image:: https://gitlab.idiap.ch/bob/bob.db.casiasurf/badges/v1.0.1/build.svg
+   :target: https://gitlab.idiap.ch/bob/bob.db.casiasurf/commits/v1.0.1
+.. image:: https://gitlab.idiap.ch/bob/bob.db.casiasurf/badges/v1.0.1/coverage.svg
+   :target: https://gitlab.idiap.ch/bob/bob.db.casiasurf/commits/v1.0.1
 .. image:: https://img.shields.io/badge/gitlab-project-0000c0.svg
    :target: https://gitlab.idiap.ch/bob/bob.db.casiasurf
 .. image:: https://img.shields.io/pypi/v/bob.db.casiasurf.svg
