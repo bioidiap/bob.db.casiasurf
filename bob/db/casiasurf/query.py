@@ -81,18 +81,18 @@ class Database(bob.db.base.SQLiteDatabase):
 
     Parameters
     ----------
-    purposes: str or tuple of str
+    purposes: str or tuple 
       The purposes required to be retrieved ('real', 'attack') or a tuple
       with several of them. If 'None' is given (this is the default), it is
       considered the same as a tuple with all possible values. 
-    groups: str or tuple of str
+    groups: str or tuple
       One of the groups ('dev', 'eval', 'train') or a tuple with several of them.
       If 'None' is given (this is the default), it is considered the same as a
       tuple with all possible values.
 
     Returns
     -------
-    lst:
+    list:
       A list of samples which have the given properties.
     
     """

@@ -12,7 +12,7 @@ containing video sequences captured using an Intel RealSense SR-300.
 It contains seven sessions: one is a real access and the six other ones are attacks.
 
 The data of the CASIA-SURF database can be downloaded `here
-<https://sites.google.com/qq.com/chalearnfacespoofingattackdete/welcome>`_.
+<https://sites.google.com/qq.com/face-anti-spoofing/dataset-download/casia-surfcvpr2019>`_.
 
 Documentation
 -------------
