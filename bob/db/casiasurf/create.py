@@ -36,7 +36,6 @@ def get_labels(label_filename):
       label = line.split(' ')[-1].rstrip()
       stem = temp.split('-')[0]
       dict_labels[stem] = label
-
   return dict_labels
 
 def add_samples(session, imagesdir, validation_label_filename, test_label_filename, extension='.jpg'):
@@ -132,7 +131,7 @@ def add_samples(session, imagesdir, validation_label_filename, test_label_filena
           if stream == 'ir': modality = 'infrared'
           if stream == 'depth': modality = 'depth'
           
-          sample_id = temp[0] + '-type-' + str(attack_type)
+          sample_id = 'val-' + temp[0] + '-type-' + str(attack_type)
 
         ###############
         ### TESTING ###
@@ -159,7 +158,7 @@ def add_samples(session, imagesdir, validation_label_filename, test_label_filena
           if stream == 'ir': modality = 'infrared'
           if stream == 'depth': modality = 'depth'
           
-          sample_id = temp[0] + '-type-' + str(attack_type)
+          sample_id = 'test-' + temp[0] + '-type-' + str(attack_type)
         
         o = Sample(sample_id, group, attack_type)
         q = session.query(Sample.id).filter(Sample.id==sample_id)
@@ -283,7 +282,7 @@ def add_files(session, imagesdir, validation_label_filename, test_label_filename
           if stream == 'ir': modality = 'infrared'
           if stream == 'depth': modality = 'depth'
           
-          sample_id = temp[0] + '-type-' + str(attack_type)
+          sample_id = 'val-' + temp[0] + '-type-' + str(attack_type)
 
         ###############
         ### TESTING ###
@@ -307,6 +306,7 @@ def add_files(session, imagesdir, validation_label_filename, test_label_filename
           if stream == 'ir': modality = 'infrared'
           if stream == 'depth': modality = 'depth'
           
+          sample_id = 'test-' + temp[0] + '-type-' + str(attack_type)
 
         stem = image_info[0:-len(extension)]
         logger.debug("Adding file {}".format(stem))
