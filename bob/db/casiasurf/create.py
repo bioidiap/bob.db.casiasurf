@@ -11,16 +11,16 @@ import bob.core
 logger = bob.core.log.setup('bob.db.casiasurf')
 
 
-def get_validation_labels(validation_label_filename):
-  """ Get the label of the validation set
+def get_labels(label_filename):
+  """ Get the label of a given set
       
   The labels are read from a text file, and a dictionary
   is built. The key is the file stem and the value is 
-  the lable (either 0 for an attack or 1 for banafide access).
+  the label (either 0 for an attack or 1 for banafide access).
 
   Parameters
   ----------
-  validation_label_filename: str
+  label_filename: str
     The path to the file containing the labels
 
   Returns
@@ -29,17 +29,16 @@ def get_validation_labels(validation_label_filename):
     the dictionary with file as key and label as value
   
   """
-  dict_validation = {}
-  with open(validation_label_filename) as vl:
-    for line in vl:
+  dict_labels = {}
+  with open(label_filename) as l:
+    for line in l:
       temp = line.split(' ')[0]
       label = line.split(' ')[-1].rstrip()
       stem = temp.split('-')[0]
-      dict_validation[stem] = label
+      dict_labels[stem] = label
+  return dict_labels
 
-  return dict_validation
-
-def add_samples(session, imagesdir, validation_label_filename, extension='.jpg'):
+def add_samples(session, imagesdir, validation_label_filename, test_label_filename, extension='.jpg'):
   """ Add samples
 
   A sample is an instance of an example of the CASIA-SURF database.
@@ -55,7 +54,11 @@ def add_samples(session, imagesdir, validation_label_filename, extension='.jpg')
   session:
     The session to the SQLite database 
   imagesdir : :py:obj:str
-    The directory where to find the images 
+    The directory where to find the images
+  validation_label_filename: str
+    The filename for the validation set (with labels)
+  test_label_filename: str
+    The filename for the test set (with labels)
   extension: :py:obj:str
     The extension of the image file.
   
@@ -65,10 +68,14 @@ def add_samples(session, imagesdir, validation_label_filename, extension='.jpg')
   n_training_attack_samples = 0
   n_validation_real_samples = 0
   n_validation_attack_samples = 0
-  n_testing_samples = 0
+  n_test_real_samples = 0
+  n_test_attack_samples = 0
   
   # get dictionary for validation labels
-  valid_dict = get_validation_labels(validation_label_filename)
+  valid_dict = get_labels(validation_label_filename)
+  
+  # get dictionary for test labels
+  test_dict = get_labels(test_label_filename)
 
   for root, dirs, files in os.walk(imagesdir, topdown=False):
     for name in files:
@@ -124,7 +131,7 @@ def add_samples(session, imagesdir, validation_label_filename, extension='.jpg')
           if stream == 'ir': modality = 'infrared'
           if stream == 'depth': modality = 'depth'
           
-          sample_id = temp[0] + '-type-' + str(attack_type)
+          sample_id = 'val-' + temp[0] + '-type-' + str(attack_type)
 
         ###############
         ### TESTING ###
@@ -135,16 +142,24 @@ def add_samples(session, imagesdir, validation_label_filename, extension='.jpg')
 
           group = 'test'
           
+          stem = "/".join(infos).split('-')[0]
+          
+          label = test_dict[stem]
+          if label == '0':
+            attack_type = 1
+            n_test_attack_samples += 1
+          elif label == '1':
+            attack_type = 0
+            n_test_real_samples += 1
+
           temp = infos[2].split('-')
           stream = temp[1].split('.')[0]
           if stream == 'color': modality = 'color'
           if stream == 'ir': modality = 'infrared'
           if stream == 'depth': modality = 'depth'
-          sample_id = temp[0] + '-type-unknown'
-          attack_type = None # we actually don't know
-          n_testing_samples += 1
-          sample_id = infos[2].split('-')[0] + '-type-unknown'
-
+          
+          sample_id = 'test-' + temp[0] + '-type-' + str(attack_type)
+        
         o = Sample(sample_id, group, attack_type)
         q = session.query(Sample.id).filter(Sample.id==sample_id)
 
@@ -170,18 +185,21 @@ def add_samples(session, imagesdir, validation_label_filename, extension='.jpg')
             n_validation_attack_samples -= 1
           if group == 'validation' and attack_type == 0:
             n_validation_real_samples -= 1
-          if group == 'test':
-            n_testing_samples -= 1
+          if group == 'test' and attack_type > 0:
+            n_test_attack_samples -= 1
+          if group == 'test' and attack_type == 0:
+            n_test_real_samples -= 1
           logger.debug("sample {} already exists".format(sample_id))
   
   logger.info("Added {} real training samples".format(n_training_real_samples))
   logger.info("Added {} attack training samples".format(n_training_attack_samples))
   logger.info("Added {} real validation samples".format(n_validation_real_samples))
   logger.info("Added {} attack validation samples".format(n_validation_attack_samples))
-  logger.info("Added {} test samples".format(n_testing_samples))
+  logger.info("Added {} real test samples".format(n_test_real_samples))
+  logger.info("Added {} attack test samples".format(n_test_attack_samples))
 
 
-def add_files(session, imagesdir, validation_label_filename, extension='.jpg'):
+def add_files(session, imagesdir, validation_label_filename, test_label_filename, extension='.jpg'):
   """ Add face images files.
 
   This function adds the face image files to the database.
@@ -192,6 +210,10 @@ def add_files(session, imagesdir, validation_label_filename, extension='.jpg'):
     The session to the SQLite database 
   imagesdir : :py:obj:str
     The directory where to find the images 
+  validation_label_filename: str
+    The filename for the validation set (with labels)
+  test_label_filename: str
+    The filename for the test set (with labels)
   extension: :py:obj:str
     The extension of the image file.
 
@@ -201,10 +223,12 @@ def add_files(session, imagesdir, validation_label_filename, extension='.jpg'):
   n_training_attack_images = 0
   n_validation_real_images = 0
   n_validation_attack_images = 0
-  n_test_images = 0
+  n_test_real_images = 0
+  n_test_attack_images = 0
  
-  # get dictionary for validation labels
-  valid_dict = get_validation_labels(validation_label_filename)
+  # get dictionary for validation and test labels
+  valid_dict = get_labels(validation_label_filename)
+  test_dict = get_labels(test_label_filename)
 
   for root, dirs, files in os.walk(imagesdir, topdown=False):
     for name in files:
@@ -258,7 +282,7 @@ def add_files(session, imagesdir, validation_label_filename, extension='.jpg'):
           if stream == 'ir': modality = 'infrared'
           if stream == 'depth': modality = 'depth'
           
-          sample_id = temp[0] + '-type-' + str(attack_type)
+          sample_id = 'val-' + temp[0] + '-type-' + str(attack_type)
 
         ###############
         ### TESTING ###
@@ -266,13 +290,23 @@ def add_files(session, imagesdir, validation_label_filename, extension='.jpg'):
         else:
           assert infos[0] == 'Testing'
           
+          stem = "/".join(infos).split('-')[0]
+          
+          label = test_dict[stem]
+          if label == '0':
+            attack_type = 1
+            n_test_attack_images += 1
+          elif label == '1':
+            attack_type = 0
+            n_test_real_images += 1
+
           temp = infos[2].split('-')
           stream = temp[1].split('.')[0]
           if stream == 'color': modality = 'color'
           if stream == 'ir': modality = 'infrared'
           if stream == 'depth': modality = 'depth'
-          n_test_images +=1 
-          sample_id = temp[0] + '-type-unknown'
+          
+          sample_id = 'test-' + temp[0] + '-type-' + str(attack_type)
 
         stem = image_info[0:-len(extension)]
         logger.debug("Adding file {}".format(stem))
@@ -283,7 +317,8 @@ def add_files(session, imagesdir, validation_label_filename, extension='.jpg'):
   logger.info("Added {} attack training images".format(n_training_attack_images))
   logger.info("Added {} real validation images".format(n_validation_real_images))
   logger.info("Added {} attack validation images".format(n_validation_attack_images))
-  logger.info("Added {} test images".format(n_test_images))
+  logger.info("Added {} real test images".format(n_test_real_images))
+  logger.info("Added {} attack test images".format(n_test_attack_images))
 
 
 def add_protocols(session):
@@ -302,7 +337,7 @@ def add_protocols(session):
 
   modalities = ['all', 'color', 'infrared', 'depth']
   
-  group_purpose_list = [('train', 'real'), ('train', 'attack'), ('validation', 'real'), ('validation', 'attack'), ('test', 'unknown')]
+  group_purpose_list = [('train', 'real'), ('train', 'attack'), ('validation', 'real'), ('validation', 'attack'), ('test', 'real'), ('test', 'attack')]
 
 
   for protocol_name in modalities:
@@ -326,14 +361,9 @@ def add_protocols(session):
 
       # first retrieve all files for the group and the purpose 
       if purpose == 'real':
-        #q = session.query(ImageFile).join(Sample).filter(and_(Sample.group == group, Sample.attack_type == 0)).order_by(ImageFile.id)
         q = session.query(Sample).filter(and_(Sample.group == group, Sample.attack_type == 0)).order_by(Sample.id)
       if purpose == 'attack':
-        #q = session.query(ImageFile).join(Sample).filter(and_(Sample.group == group, Sample.attack_type > 0)).order_by(ImageFile.id)
         q = session.query(Sample).filter(and_(Sample.group == group, Sample.attack_type > 0)).order_by(Sample.id)
-      if purpose == 'unknown':
-        #q = session.query(ImageFile).join(Sample).filter(Sample.group == group).order_by(ImageFile.id)
-        q = session.query(Sample).filter(Sample.group == group).order_by(Sample.id)
 
       # now add the samples
       for k in q:
@@ -375,8 +405,8 @@ def create(args):
   create_tables(args)
   s = session_try_nolock(args.type, args.files[0], echo=False)
   
-  add_files(s, args.imagesdir, args.validlabel)
-  add_samples(s, args.imagesdir, args.validlabel)
+  add_files(s, args.imagesdir, args.validlabel, args.testlabel)
+  add_samples(s, args.imagesdir, args.validlabel, args.testlabel)
   add_protocols(s)
   s.commit()
   s.close()
@@ -397,5 +427,7 @@ def add_command(subparsers):
                       help="The path to the extracted images of the database")
   parser.add_argument('validlabel', action='store', metavar='FILE',
                       help="The file containing validation set labels")
+  parser.add_argument('testlabel', action='store', metavar='FILE',
+                      help="The file containing test set labels")
 
   parser.set_defaults(func=create)  # action

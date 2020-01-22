@@ -35,4 +35,6 @@ def test_objects():
   assert len(db.objects(groups=('validation',), purposes=('real',))) == 2994
   assert len(db.objects(groups=('validation',), purposes=('attack',))) == 6614
   assert len(db.objects(groups=('validation',), purposes=('real','attack'))) == 9608
-  assert len(db.objects(groups=('test',), purposes=('unknown',))) == 57710
+  assert len(db.objects(groups=('test',), purposes=('real',))) == 17458
+  assert len(db.objects(groups=('test',), purposes=('attack',))) == 40252 
+  assert len(db.objects(groups=('test',), purposes=('real', 'attack'))) == 57710
