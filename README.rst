@@ -3,10 +3,10 @@
 
 .. image:: https://img.shields.io/badge/docs-available-orange.svg
    :target: https://www.idiap.ch/software/bob/docs/bob/bob.db.casiasurf/master/index.html
-.. image:: https://gitlab.idiap.ch/bob/bob.db.casiasurf/badges/master/pipeline.svg
-   :target: https://gitlab.idiap.ch/bob/bob.db.casiasurf/commits/master
-.. image:: https://gitlab.idiap.ch/bob/bob.db.casiasurf/badges/master/coverage.svg
-   :target: https://gitlab.idiap.ch/bob/bob.db.casiasurf/commits/master
+.. image:: https://gitlab.idiap.ch/bob/bob.db.casiasurf/badges/v1.0.3/pipeline.svg
+   :target: https://gitlab.idiap.ch/bob/bob.db.casiasurf/commits/v1.0.3
+.. image:: https://gitlab.idiap.ch/bob/bob.db.casiasurf/badges/v1.0.3/coverage.svg
+   :target: https://gitlab.idiap.ch/bob/bob.db.casiasurf/commits/v1.0.3
 .. image:: https://img.shields.io/badge/gitlab-project-0000c0.svg
    :target: https://gitlab.idiap.ch/bob/bob.db.casiasurf
 
